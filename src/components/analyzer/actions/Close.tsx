@@ -7,12 +7,18 @@ import { reset } from "@redux/slices/video";
 const label = "Close video";
 
 const Close = () => {
-  const { blob } = useAppSelector((state) => state.video);
+  const { primaryVideo, secondaryVideo } = useAppSelector(
+    (state) => state.video,
+  );
   const dispatch = useAppDispatch();
 
   const handleClose = () => {
-    if (typeof blob === "string") {
-      URL.revokeObjectURL(blob);
+    // Clean up video blob URLs to prevent memory leaks
+    if (typeof primaryVideo.blob === "string") {
+      URL.revokeObjectURL(primaryVideo.blob);
+    }
+    if (typeof secondaryVideo.blob === "string") {
+      URL.revokeObjectURL(secondaryVideo.blob);
     }
     dispatch(reset());
   };

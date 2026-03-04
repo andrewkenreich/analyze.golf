@@ -3,10 +3,13 @@ import * as Slider from "@radix-ui/react-slider";
 import * as Tooltip from "@radix-ui/react-tooltip";
 
 import useAppSelector from "@hooks/useAppSelector";
-import { getPrimaryPlayer, getAllPlayers } from "@helpers";
+import useAppDispatch from "@hooks/useAppDispatch";
+import { getPrimaryPlayer, getSecondaryPlayer } from "@helpers";
+import { setPrimaryCurrentTime, setPrimaryPlayback } from "@redux/slices/video";
 
-const Progress = () => {
-  const { primaryVideo, isComparisonMode, syncPlayback } = useAppSelector(
+const PrimaryProgress = () => {
+  const dispatch = useAppDispatch();
+  const { primaryVideo, syncPlayback, isComparisonMode } = useAppSelector(
     (state) => state.video,
   );
   const { duration, currentTime, isPlaying } = primaryVideo;
@@ -22,33 +25,45 @@ const Progress = () => {
     isDragging.current = true;
 
     if (isPlaying) {
-      if (isComparisonMode && syncPlayback) {
-        getAllPlayers().forEach((player) => {
-          player.pause();
-        });
-      } else {
-        getPrimaryPlayer().pause();
+      getPrimaryPlayer().pause();
+
+      // If sync is enabled, also pause secondary video
+      if (syncPlayback && isComparisonMode) {
+        const secondaryPlayer = getSecondaryPlayer();
+        if (secondaryPlayer !== null) {
+          secondaryPlayer.pause();
+        }
+      }
+
+      dispatch(setPrimaryPlayback(false));
+    }
+
+    getPrimaryPlayer().currentTime = values[0];
+
+    // If sync is enabled, also update secondary video time
+    if (syncPlayback && isComparisonMode) {
+      const secondaryPlayer = getSecondaryPlayer();
+      if (secondaryPlayer !== null) {
+        secondaryPlayer.currentTime = values[0];
       }
     }
 
-    if (isComparisonMode && syncPlayback) {
-      getAllPlayers().forEach((player) => {
-        player.currentTime = values[0];
-      });
-    } else {
-      getPrimaryPlayer().currentTime = values[0];
-    }
+    dispatch(setPrimaryCurrentTime(values[0]));
   };
 
   const handleCommit = () => {
     if (isPlayingAtStartOfSliderChange.current) {
-      if (isComparisonMode && syncPlayback) {
-        getAllPlayers().forEach((player) => {
-          void player.play();
-        });
-      } else {
-        void getPrimaryPlayer().play();
+      void getPrimaryPlayer().play();
+
+      // If sync is enabled, also play secondary video
+      if (syncPlayback && isComparisonMode) {
+        const secondaryPlayer = getSecondaryPlayer();
+        if (secondaryPlayer !== null) {
+          void secondaryPlayer.play();
+        }
       }
+
+      dispatch(setPrimaryPlayback(true));
     }
     isDragging.current = false;
   };
@@ -61,7 +76,7 @@ const Progress = () => {
         step={0.01}
         min={0}
         max={duration}
-        aria-label="Video playback time"
+        aria-label="Primary video playback time"
         onValueChange={handleChange}
         onValueCommit={handleCommit}
       >
@@ -90,6 +105,4 @@ const Progress = () => {
   );
 };
 
-//
-
-export default Progress;
+export default PrimaryProgress;

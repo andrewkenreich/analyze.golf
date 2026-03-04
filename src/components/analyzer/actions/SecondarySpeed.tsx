@@ -4,13 +4,16 @@ import * as Popover from "@radix-ui/react-popover";
 import { track } from "@vercel/analytics";
 
 import useAppSelector from "@hooks/useAppSelector";
-import { getPrimaryPlayer, getAllPlayers } from "@helpers";
+import useAppDispatch from "@hooks/useAppDispatch";
+import { getPrimaryPlayer, getSecondaryPlayer } from "@helpers";
+import { setSecondarySpeed } from "@redux/slices/video";
 
-const Speed = () => {
-  const { primaryVideo, isComparisonMode, syncPlayback } = useAppSelector(
+const SecondarySpeed = () => {
+  const dispatch = useAppDispatch();
+  const { secondaryVideo, syncPlayback, isComparisonMode } = useAppSelector(
     (state) => state.video,
   );
-  const { speed } = primaryVideo;
+  const { speed } = secondaryVideo;
   const [isOpen, setIsOpen] = useState<boolean>(false);
 
   const handleOpenChange = (open: boolean) => {
@@ -18,14 +21,18 @@ const Speed = () => {
   };
 
   const handleChangePlaybackRate = (speed: number) => {
-    if (isComparisonMode && syncPlayback) {
-      getAllPlayers().forEach((player) => {
-        player.playbackRate = speed;
-      });
-    } else {
-      getPrimaryPlayer().playbackRate = speed;
+    const player = getSecondaryPlayer();
+    if (player !== null) {
+      player.playbackRate = speed;
+
+      // If sync is enabled, also update primary video speed
+      if (syncPlayback && isComparisonMode) {
+        getPrimaryPlayer().playbackRate = speed;
+      }
+
+      dispatch(setSecondarySpeed(speed));
+      track("Change secondary playback rate", { speed });
     }
-    track("Change playback rate", { speed });
   };
 
   return (
@@ -34,7 +41,7 @@ const Speed = () => {
         <button
           type="button"
           className="btn-action"
-          aria-label="Change video playback rate"
+          aria-label="Change secondary video playback rate"
         >
           <BsSpeedometer />
         </button>
@@ -63,4 +70,4 @@ const Speed = () => {
   );
 };
 
-export default Speed;
+export default SecondarySpeed;

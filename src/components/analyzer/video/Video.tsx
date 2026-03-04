@@ -15,7 +15,8 @@ import {
 } from "@redux/slices/video";
 
 const Video = () => {
-  const { blob, isFlipped } = useAppSelector((state) => state.video);
+  const { primaryVideo } = useAppSelector((state) => state.video);
+  const { blob, isFlipped } = primaryVideo;
   const [playbackError, setPlaybackError] = useState<boolean>(false);
   const dispatch = useAppDispatch();
 
@@ -75,7 +76,7 @@ const Video = () => {
           </div>
         </div>
       </FocusLock>,
-      document.body
+      document.body,
     );
   }
 
@@ -87,6 +88,7 @@ const Video = () => {
       autoPlay
       playsInline
       data-flipped="false"
+      data-video-type="primary"
       className={`block max-h-full max-w-full h-full mx-auto pointer-events-none ${
         isFlipped ? "-scale-x-100" : "scale-x-100"
       }`}

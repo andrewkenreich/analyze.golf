@@ -1,20 +1,35 @@
 import { BsFillPlayFill, BsFillPauseFill } from "react-icons/bs";
 
 import useAppSelector from "@hooks/useAppSelector";
-import { getPlayer } from "@helpers";
+import { getPrimaryPlayer, getAllPlayers } from "@helpers";
 
 const playLabel = "Play video";
 const pauseLabel = "Pause video";
 
 const PlayPause = () => {
-  const { isPlaying } = useAppSelector((state) => state.video);
+  const { primaryVideo, isComparisonMode, syncPlayback } = useAppSelector(
+    (state) => state.video,
+  );
+  const { isPlaying } = primaryVideo;
 
   const handlePause = () => {
-    getPlayer().pause();
+    if (isComparisonMode && syncPlayback) {
+      getAllPlayers().forEach((player) => {
+        player.pause();
+      });
+    } else {
+      getPrimaryPlayer().pause();
+    }
   };
 
   const handlePlay = () => {
-    void getPlayer().play();
+    if (isComparisonMode && syncPlayback) {
+      getAllPlayers().forEach((player) => {
+        void player.play();
+      });
+    } else {
+      void getPrimaryPlayer().play();
+    }
   };
 
   if (isPlaying) {

@@ -1,5 +1,5 @@
 import { BsFillVolumeMuteFill, BsFillVolumeDownFill } from "react-icons/bs";
-import { getPlayer } from "@helpers";
+import { getPrimaryPlayer } from "@helpers";
 import { track } from "@vercel/analytics";
 
 import useAppSelector from "@hooks/useAppSelector";
@@ -8,15 +8,16 @@ const mutedLabel = "Unmute video";
 const label = "Mute video";
 
 const Muted = () => {
-  const { isMuted } = useAppSelector((state) => state.video);
+  const { primaryVideo } = useAppSelector((state) => state.video);
+  const { isMuted } = primaryVideo;
 
   const handleMute = () => {
-    getPlayer().muted = true;
+    getPrimaryPlayer().muted = true;
     track("Mute video");
   };
 
   const handleVolume = () => {
-    getPlayer().muted = false;
+    getPrimaryPlayer().muted = false;
     track("Unmute video");
   };
 

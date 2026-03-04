@@ -10,9 +10,14 @@ const Analyzer = lazy(() => import("@components/analyzer/Analyzer"));
 
 function App() {
   useVhHeight();
-  const { blob } = useAppSelector((state) => state.video);
+  const { primaryVideo, shouldStartAnalysis } = useAppSelector(
+    (state) => state.video,
+  );
 
-  if (blob !== undefined) {
+  const hasVideo = primaryVideo.blob !== undefined;
+  const shouldShowAnalyzer = hasVideo && shouldStartAnalysis;
+
+  if (shouldShowAnalyzer) {
     return (
       <Suspense
         fallback={
